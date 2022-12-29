@@ -78,10 +78,17 @@ protected:
 
 	void FireButtonReleased();
 
+	// This methods starts a cooldown timer after firing and calls AutoFireReset() function for looping the firing while fire button is pressed.
 	void StartFireTimer();
 
+	
 	UFUNCTION()
+	// If fire button is still pressed, loop the StartFireTimer function (for automatic firing).
 	void AutoFireReset();
+
+	// Perform a line trace under the crosshairs to see what it is looking at. Returns a bool, true if it hits something.
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

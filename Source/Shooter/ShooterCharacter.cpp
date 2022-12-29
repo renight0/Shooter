@@ -10,6 +10,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Item.h"
+#include "Components/WidgetComponent.h"
 
 
 AShooterCharacter::AShooterCharacter()
@@ -108,7 +110,21 @@ void AShooterCharacter::Tick(float DeltaTime)
 	SetLookRates();
 
 	CalculateCrosshairSpread(DeltaTime);
-	
+
+	FHitResult itemTraceResult;
+	TraceUnderCrosshairs(itemTraceResult);
+	if (itemTraceResult.bBlockingHit)
+	{
+		AItem* hitItem = Cast<AItem>(itemTraceResult.GetActor());
+		if (hitItem && hitItem->GetPickupWidget())
+		{
+			// show item's pick up widget.
+
+			hitItem->GetPickupWidget()->SetVisibility(true);
+			//UWidgetComponent* pickupWidget = hitItem->GetPickupWidget();
+			//pickupWidget->SetVisibility(true);
+		}
+	}
 }
 
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -302,6 +318,50 @@ void AShooterCharacter::AutoFireReset()
 	{
 		StartFireTimer();
 	}
+}
+
+bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+{
+	// Get viewport size.
+	// Create a vector 2D and assign its value to the current viewport size.
+	FVector2d viewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(viewportSize);
+	}
+
+	// Get screen space location of cross-hairs.
+	FVector2d crossHairLocation(viewportSize.X/2.f , viewportSize.Y / 2.f);
+	//crossHairLocation.Y -= 50.f; // Only uncomment this if also subtracting from screen center position in hudBP to get the new crosshair location.
+
+	FVector crossHairWorldPosition;
+	FVector crossHairWorldDirection;
+
+	APlayerController* GetPlayerController = UGameplayStatics::GetPlayerController(this, 0);
+
+	/*Get the values of the vectors for the cross hair world position and direction and set them to out variables.
+	 The following function also returns a boolean and it is true if it was successful.*/
+	bool bScreenToWorldDeprojectionSuccessful = UGameplayStatics::DeprojectScreenToWorld(
+		GetPlayerController,
+		crossHairLocation,
+		crossHairWorldPosition,
+		crossHairWorldDirection);
+
+	if (bScreenToWorldDeprojectionSuccessful)
+	{
+		// Trace from crosshair world location outward
+		const FVector start{ crossHairWorldPosition };
+		const FVector end{ start * crossHairWorldDirection * 50'000.f };
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, start, end,ECC_Visibility);
+
+		if(OutHitResult.bBlockingHit)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+	
 }
 
 const void AShooterCharacter::BulletLineTraceAndFX(const FTransform bulletFireSocketTransform, bool bDrawDebugLines)

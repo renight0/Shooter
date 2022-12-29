@@ -17,17 +17,24 @@ AItem::AItem()
 
 	_collisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("_collisionBox"));
 	_collisionBox->SetupAttachment(_itemMesh);
+	
+	// Setting collision box to be hit by the line trace.
+	// Setting collision response to be ignore to all channels.
+	_collisionBox->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
+	// Set collision to block only the channel we  are interested. In this case the Visibility channel will be blocked when the line trace hit the widget.
+	_collisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECR_Block);
 
-
-	_pickupWidgets = CreateDefaultSubobject<UWidgetComponent>(TEXT("_pickUpWidget"));
-	_pickupWidgets->SetupAttachment(GetRootComponent());
+	_pickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("_pickUpWidget"));
+	_pickupWidget->SetupAttachment(GetRootComponent());
 }
 
 
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// Hide pickup widget
+	_pickupWidget->SetVisibility(false);
 }
 
 

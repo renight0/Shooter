@@ -38,11 +38,11 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = true));
 	// Popup widget for when the player looks at the item.
-	class UWidgetComponent* _pickupWidgets;
+	class UWidgetComponent* _pickupWidget;
 
 	
 	
 // ~ Public getters and setters ~ //
 public:
-	
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return _pickupWidget; }	
 };
