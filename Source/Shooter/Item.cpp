@@ -3,6 +3,7 @@
 
 #include "Item.h"
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 
 
 AItem::AItem()
@@ -16,7 +17,10 @@ AItem::AItem()
 
 	_collisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("_collisionBox"));
 	_collisionBox->SetupAttachment(_itemMesh);
-	
+
+
+	_pickupWidgets = CreateDefaultSubobject<UWidgetComponent>(TEXT("_pickUpWidget"));
+	_pickupWidgets->SetupAttachment(GetRootComponent());
 }
 
 
